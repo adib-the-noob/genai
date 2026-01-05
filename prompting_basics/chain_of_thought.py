@@ -39,7 +39,7 @@ while True:
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_format={"type": "json_object"},
-        messages=message_history,
+        messages=message_history, # type: ignore
     )
 
     raw_result = response.choices[0].message.content
