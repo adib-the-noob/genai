@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -16,7 +17,7 @@ SYSTEM_PROMPT = """""
     - Strictly follow the given JSON format provided below.
     - Only run one step at a time.
     - THe sequence of step is START(Where user will provide an input), PLAN(Where you will plan how to solve the problem), OUTPUT(Where you will provide the final answer).
-
+    - Always respond in valid JSON format.
 
     OUTPUT FORMAT:
     { "step": "START" or "PLAN" or "OUTPUT", "content": "string" }
@@ -28,20 +29,32 @@ SYSTEM_PROMPT = """""
     PLAN: { "step": "OUTPUT", "content": "The product of 12 and 15 is 180." }
     
 """
+print("\n\n")
 
-message_history = []
+message_history = [{"role": "system", "content": SYSTEM_PROMPT}]
 user_query = input("=> ")
+message_history.append({"role": "user", "content": user_query})
 
+while True:
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_format={"type": "json_object"},
+        messages=message_history,
+    )
 
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_format={
-        "type": "json_object"
-    },
-    messages=[
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": "Hello! Check for odd and Even using js`"},
-    ],
-)
+    raw_result = response.choices[0].message.content
+    message_history.append({"role": "assistant", "content": raw_result})
+    parsed_result = json.loads(raw_result)
+    
+    if parsed_result["step"] == "START":
+        print("[START] ", parsed_result["content"])
+        continue
+    elif parsed_result["step"] == "PLAN":
+        print("[PLAN] ", parsed_result["content"])
+        message_history.append({"role": "assistant", "content": raw_result})
+        continue
+    elif parsed_result["step"] == "OUTPUT":
+        print("[OUTPUT] ", parsed_result["content"])
+        break
 
-print(response.choices[0].message.content)
+print("\n\n")
