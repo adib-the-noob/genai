@@ -21,6 +21,14 @@ config = {
         "provider": "openai",
         "config": {"model": "gpt-4-turbo", "api_key": OPENAI_API_KEY},
     },
+    "graph_store": {
+        "provider": "neo4j",
+        "config": {
+            "url": "neo4j+s://48efad12.databases.neo4j.io",
+            "username": "neo4j",
+            "password": "<>",
+        },
+    },
     "vector_store": {
         "provider": "qdrant",
         "config": {
@@ -33,7 +41,8 @@ config = {
 mem_client = Memory.from_config(config)
 
 while True:
-    user_input = input(">> ")
+    print("===============================")
+    user_input = input("\nYou 👉: ")
     search_memory = mem_client.search(
         user_id="adib-the-noob",
         query=user_input,
@@ -56,8 +65,8 @@ while True:
     )
 
     ai_response = response.choices[0].message.content
-    print("AI:", ai_response)
-
+    print("===============================")
+    print("\nRobo 🤖:", ai_response)
     mem_client.add(
         user_id="adib",
         messages=[
